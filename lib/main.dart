@@ -50,8 +50,6 @@ class _HomePageState extends State<HomePage> {
 
   void _showForm(int? id) async {
     if (id != null) {
-      // id == null -> create new item
-      // id != null -> update an existing item
       final existingJournal =
           _journals.firstWhere((element) => element['id'] == id);
       _titleController.text = existingJournal['title'];
@@ -146,32 +144,99 @@ class _HomePageState extends State<HomePage> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : ListView.builder(
-              itemCount: _journals.length,
-              itemBuilder: (context, index) => Card(
-                color: Colors.orange[200],
-                margin: const EdgeInsets.all(15),
-                child: ListTile(
-                  title: Text(_journals[index]['title']),
-                  subtitle: Text(_journals[index]['description']),
-                  trailing: SizedBox(
-                    width: 100,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _showForm(_journals[index]['id']),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteItem(_journals[index]['id']),
-                        ),
-                      ],
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const <DataColumn>[
+                  DataColumn(
+                    label: Text(
+                      'No.',
+                      style: TextStyle(fontStyle: FontStyle.italic),
                     ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Title',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Desc',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Action',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+                rows: List<DataRow>.generate(
+                  _journals.length,
+                  (index) => DataRow(
+                    cells: <DataCell>[
+                      DataCell(
+                        Text('$index+1'),
+                      ),
+                      DataCell(
+                        Text(_journals[index]['title']),
+                      ),
+                      DataCell(
+                        Text(_journals[index]['description']),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: 100,
+                          child: Row(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () =>
+                                    _showForm(_journals[index]['id']),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () =>
+                                    _deleteItem(_journals[index]['id']),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
+            )
+      // ListView.builder(
+      //     itemCount: _journals.length,
+      //     itemBuilder: (context, index) => Card(
+      //       color: Colors.orange[200],
+      //       margin: const EdgeInsets.all(15),
+      //       child: ListTile(
+      //         title: Text(_journals[index]['title']),
+      //         subtitle: Text(_journals[index]['description']),
+      //         trailing: SizedBox(
+      //           width: 100,
+      //           child: Row(
+      //             children: [
+      //               IconButton(
+      //                 icon: const Icon(Icons.edit),
+      //                 onPressed: () => _showForm(_journals[index]['id']),
+      //               ),
+      //               IconButton(
+      //                 icon: const Icon(Icons.delete),
+      //                 onPressed: () => _deleteItem(_journals[index]['id']),
+      //               ),
+      //             ],
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      ,
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () => _showForm(null),
