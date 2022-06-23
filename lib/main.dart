@@ -91,6 +91,22 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  getTodosById(String id) async {
+    // Lakukan Request getTodosById pada API Service
+    await ApiService().getTodosById(id).then((response) {
+      if (response != null) {
+        // set data response ke dalam todosData
+        todosData = response;
+
+        // Lakukan set state pada state _titleController.text dan _descriptionController.text
+        setState(() {
+          _titleController.text = 'Note ' + todosData.id;
+          _descriptionController.text = todosData.title;
+        });
+      }
+    });
+  }
+
   void _showForm(int? id) async {
     if (id != null) {
       final existingJournal =
