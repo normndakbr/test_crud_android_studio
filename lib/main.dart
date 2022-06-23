@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'sql_helper.dart';
+// Import model dan repository (controller) todos
+import 'repositories/todos.dart';
+import 'models/todos.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,27 +34,65 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+
+  // deklarasi variabel untuk model Todo
+  late Todos todosData;
+
+  // deklarasi variabel dalam bentuk list untuk menampung list data dari Todo
+  List<Todos> todoList = [];
+
   List<Map<String, dynamic>> _journals = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _refreshJournals(); // Loading the diary when the app starts
+    _refreshJournals();
   }
 
   void _refreshJournals() async {
-    final data = await SQLHelper.getItems();
-    setState(() {
-      _journals = data;
-      _isLoading = false;
+    // Request ke API service
+    ApiService().getTodos().then((response) => {
+          setState(() {
+            for (var i = 0; i < response.length; i++) {
+              // Lakukan perulangan sejumlah data balikan response, lalu masukkan data ke-i ke dalam list data Todo
+              todoList.add(Todos(
+                userId: response[i].userId,
+                id: response[i].id,
+                title: response[i].title,
+                completed: response[i].completed,
+              ));
+            }
+            // set variabel _isLoading menjadi false
+            _isLoading = false;
+          })
+        });
+  }
+
+  createData(String newUserId, String newTitle, String newStatus) {
+    // Lakukan request createTodos pada API Service
+    ApiService().createTodos(newUserId, newTitle, newStatus).then((response) {
+      if (response == true) {
+        // jika response berhasil (true), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Note added successfully!'),
+          ),
+        );
+      } else {
+        // jika response gagal (false), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Create request failed, please kindly check your internet connection.'),
+          ),
+        );
+      }
     });
   }
 
   void _showForm(int? id) async {
     if (id != null) {
-      // id == null -> create new item
-      // id != null -> update an existing item
       final existingJournal =
           _journals.firstWhere((element) => element['id'] == id);
       _titleController.text = existingJournal['title'];
@@ -114,26 +155,6 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ));
-  }
-
-  Future<void> _addItem() async {
-    await SQLHelper.createItem(
-        _titleController.text, _descriptionController.text);
-    _refreshJournals();
-  }
-
-  Future<void> _updateItem(int id) async {
-    await SQLHelper.updateItem(
-        id, _titleController.text, _descriptionController.text);
-    _refreshJournals();
-  }
-
-  void _deleteItem(int id) async {
-    await SQLHelper.deleteItem(id);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Successfully deleted a note!'),
-    ));
-    _refreshJournals();
   }
 
   @override
