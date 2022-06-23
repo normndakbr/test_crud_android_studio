@@ -103,6 +103,32 @@ class _HomePageState extends State<HomePage> {
           _titleController.text = 'Note ' + todosData.id;
           _descriptionController.text = todosData.title;
         });
+      } else {
+        print("No Data!");
+      }
+    });
+  }
+
+  editTodos(String id, String newUserId, String newTitle, String newCompleted) {
+    // Lakukan request editTodos pada API Service
+    ApiService()
+        .editTodos(id, newUserId, newTitle, newCompleted)
+        .then((response) {
+      if (response == true) {
+        // jika response berhasil (true), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Note ' + id + ' has editted successfully!')),
+        );
+      } else {
+        // jika response gagal (false), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Edit request failed, please kindly check your internet connection.'),
+          ),
+        );
+
+        print(response);
       }
     });
   }
