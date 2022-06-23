@@ -47,10 +47,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _refreshJournals();
+    _refreshTodos();
   }
 
-  void _refreshJournals() async {
+  void _refreshTodos() async {
     // Request ke API service
     ApiService().getTodos().then((response) => {
           setState(() {
@@ -125,6 +125,30 @@ class _HomePageState extends State<HomePage> {
           const SnackBar(
             content: Text(
                 'Edit request failed, please kindly check your internet connection.'),
+          ),
+        );
+
+        print(response);
+      }
+    });
+  }
+
+  deleteTodos(String todosId) {
+    // Lakukan request deleteTodos pada API Service
+    ApiService().deleteTodos(todosId).then((response) {
+      if (response == true) {
+        // jika response berhasil (true), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Note ' + todosId + ' deleted successfully!'),
+          ),
+        );
+      } else {
+        // jika response gagal (false), maka tampilkan snackbar berikut
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Delete request failed, please kindly check your internet connection.'),
           ),
         );
 
