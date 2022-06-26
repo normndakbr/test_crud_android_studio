@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'sql_helper.dart';
+
 // Import model dan repository (controller) todos
 import 'repositories/todos.dart';
 import 'models/todos.dart';
@@ -158,12 +158,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showForm(int? id) async {
+    // Kosongkan data form pertama kali
+    _titleController.text = '';
+    _descriptionController.text = '';
+
     if (id != null) {
-      final existingJournal =
-          _journals.firstWhere((element) => element['id'] == id);
-      _titleController.text = existingJournal['title'];
-      _descriptionController.text = existingJournal['description'];
+      // Apabila id tidak null, lakukan request http ke endpoint get todos by id
+      getTodosById(id.toString());
     } else {
+      // Apabila id null maka kosongkan data pada form
       _titleController.text = '';
       _descriptionController.text = '';
     }
@@ -202,18 +205,20 @@ class _HomePageState extends State<HomePage> {
                     onPressed: () async {
                       // Save new journal
                       if (id == null) {
-                        await _addItem();
+                        await createData('19', _titleController.text,
+                            _descriptionController.text);
                       }
 
                       if (id != null) {
-                        await _updateItem(id);
+                        await editTodos(id.toString(), '20',
+                            _titleController.text, _descriptionController.text);
                       }
 
                       // Clear the text fields
                       _titleController.text = '';
                       _descriptionController.text = '';
 
-                      // Close the bottom sheet
+                      // Tutup modal bottom sheet
                       Navigator.of(context).pop();
                     },
                     child: Text(id == null ? 'Tambah Baru' : 'Perbarui'),
@@ -233,32 +238,39 @@ class _HomePageState extends State<HomePage> {
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : ListView.builder(
-              itemCount: _journals.length,
-              itemBuilder: (context, index) => Card(
-                color: Colors.orange[200],
-                margin: const EdgeInsets.all(15),
-                child: ListTile(
-                  title: Text(_journals[index]['title']),
-                  subtitle: Text(_journals[index]['description']),
-                  trailing: SizedBox(
-                    width: 100,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: () => _showForm(_journals[index]['id']),
+          : todoList.length > 0
+              ? ListView.builder(
+                  itemCount: todoList.length,
+                  itemBuilder: (context, index) => Card(
+                    color: Colors.orange[200],
+                    margin: const EdgeInsets.all(15),
+                    child: ListTile(
+                      title: Text(todoList[index].id),
+                      subtitle: Text(todoList[index].title),
+                      trailing: SizedBox(
+                        width: 100,
+                        child: Row(
+                          children: [
+                            IconButton(
+                                icon: const Icon(Icons.edit),
+                                onPressed: () {
+                                  print("Edit note id ke - " +
+                                      todoList[index].id);
+                                  _showForm(int.parse(todoList[index].id));
+                                }),
+                            IconButton(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () => deleteTodos(todoList[index].id),
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete),
-                          onPressed: () => _deleteItem(_journals[index]['id']),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
+                )
+              : const Center(
+                  child: Text('Tidak ada data'),
                 ),
-              ),
-            ),
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add),
         onPressed: () => _showForm(null),
